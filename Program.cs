@@ -19,12 +19,21 @@ static internal class Program
   [STAThread]
   static void Main()
   {
+    DispatcherQueueHelper.InitDispatcherQueue();
+    WidgetWindow.RegisterWindowClass();
+
+    var widget = new WidgetWindow();
+    widget.Show();
+
+    HotReloader.OnReload += () =>
+    {
+      widget.Reset();
+    };
+
     ApplicationConfiguration.Initialize();
     Application.SetColorMode(SystemColorMode.System);
-    DispatcherQueueHelper.InitDispatcherQueue();
-   
+
     SetupTray();
-    var widget = new WidgetWindow();
     Application.Run();
   }
 
