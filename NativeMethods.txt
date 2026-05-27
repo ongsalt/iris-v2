@@ -1,0 +1,9 @@
+CreateWindowEx
+RegisterClassEx
+GetModuleHandle
+RegisterClass
+DefWindowProc
+WM_NCCALCSIZE
+NCCALCSIZE_PARAMS
+SetWindowPos
+SET_WINDOW_POS_FLAGS
