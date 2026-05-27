@@ -13,3 +13,8 @@ ShowWindow
 
 LoadCursor
 IDC_ARROW
+
+ICompositorInterop
+ICompositionGraphicsDeviceInterop
+ICompositionDrawingSurfaceInterop
+

@@ -1,5 +1,6 @@
 using Windows.UI.Composition;
 using Windows.UI.Composition.Desktop;
+using Windows.Win32;
 using Windows.Win32.Foundation;
 using WinRT;
 

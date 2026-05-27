@@ -1,7 +1,8 @@
-using System.ComponentModel;
 using System.Diagnostics;
 using System.Numerics;
+using System.Runtime.InteropServices;
 using Microsoft.Graphics.Canvas.Effects;
+using Windows.Graphics.DirectX;
 using Windows.UI.Composition;
 using Windows.Win32;
 using Windows.Win32.Foundation;
@@ -13,14 +14,16 @@ class WidgetWindow : IDisposable
 {
   private readonly Compositor compositor = new();
   private readonly HWND hwnd;
-  private readonly SpriteVisual root;
+  internal readonly SpriteVisual root;
 
   internal WidgetWindow()
   {
-    hwnd = SetupCompositionWindow() ?? throw new Exception("idk how to use this");
+    // var size = new Size(Screen.PrimaryScreen!.Bounds.Width, Screen.PrimaryScreen!.Bounds.Height);
+    // TODO: dpi
+    var size = Screen.PrimaryScreen!.Bounds.Size;
+    hwnd = SetupCompositionWindow(size) ?? throw new Exception("idk how to use this");
     var target = compositor.CreateDesktopWindowTarget(hwnd, true);
     root = compositor.CreateSpriteVisual();
-    root.Brush = compositor.CreateColorBrush(Windows.UI.Color.FromArgb(0x1f, 0xff, 0, 0));
     root.Size = new(10000, 10000);
     target.Root = root;
 
@@ -29,12 +32,26 @@ class WidgetWindow : IDisposable
 
   private void InitContent()
   {
+    // root.Brush = compositor.CreateColorBrush(Windows.UI.Color.FromArgb(0x1f, 0xff, 0, 0));
+
     var r = CreateVisual();
     var b = CreateBlurVisual();
-    b.Offset = new(50, 50, 0);
+    var o = CreateExposureVisual(0.40f);
+    var offset = new Vector3(40, 40, 0);
+    b.Offset = o.Offset = offset;
+
+    var animation = compositor.CreateSpringVector3Animation();
+    animation.DampingRatio = 1;
+    animation.InitialValue = offset;
+    animation.FinalValue = offset * 5;
+    b.StartAnimation("Offset", animation);
+    o.StartAnimation("Offset", animation);
+
+    // root.Children.InsertAtBottom(r);
+    root.Children.InsertAtTop(o);
     root.Children.InsertAtTop(b);
-    root.Children.InsertAtBottom(r);
   }
+
 
   internal void Reset()
   {
@@ -75,6 +92,39 @@ class WidgetWindow : IDisposable
 
     // Create a BackdropBrush and bind it to the EffectSourceParameter source.
     _backdropBrush.SetSourceParameter("source", compositor.CreateBackdropBrush());
+    // _backdropBrush.SetSourceParameter("source", compositor.CreateHostBackdropBrush());
+
+    // sprite.Brush = brush;
+    sprite.Brush = _backdropBrush;
+    sprite.Size = new Vector2(100, 100);
+
+    var shadow = compositor.CreateDropShadow();
+    shadow.BlurRadius = 67f;
+    shadow.Color = Windows.UI.Color.FromArgb(0x50, 0, 0, 0);
+    sprite.Shadow = shadow;
+
+    return sprite;
+  }
+
+  private Visual CreateExposureVisual(float exposure)
+  {
+    var sprite = compositor.CreateSpriteVisual();
+    ExposureEffect effect = new()
+    {
+      Name = "Blend",
+      Source = new CompositionEffectSourceParameter("source"),
+      Exposure = exposure
+      // Foreground = new CompositionEffectSourceParameter("foreground"),
+
+      // Mode = BlendEffectMode.Overlay
+    };
+
+    CompositionEffectFactory blurEffectFactory = compositor.CreateEffectFactory(effect);
+    CompositionEffectBrush _backdropBrush = blurEffectFactory.CreateBrush();
+
+    // Create a BackdropBrush and bind it to the EffectSourceParameter source.
+    _backdropBrush.SetSourceParameter("source", compositor.CreateBackdropBrush());
+    // _backdropBrush.SetSourceParameter("foreground", compositor.CreateColorBrush(Windows.UI.Color.FromArgb(0xff, 0xff, 0xff, 0xff)));
 
     // sprite.Brush = brush;
     sprite.Brush = _backdropBrush;
@@ -82,6 +132,7 @@ class WidgetWindow : IDisposable
 
     return sprite;
   }
+
 
   private const string className = "IrisV2WindowClass";
   internal static void RegisterWindowClass()
@@ -109,21 +160,21 @@ class WidgetWindow : IDisposable
   }
 
 
-  static HWND? SetupCompositionWindow(string title = "Widget")
+  static HWND? SetupCompositionWindow(Size size, string title = "Widget")
   {
     unsafe
     {
       var hInst = PInvoke.GetModuleHandle(null);
 
       var hwnd = PInvoke.CreateWindowEx(
-        WINDOW_EX_STYLE.WS_EX_NOREDIRECTIONBITMAP,
+        WINDOW_EX_STYLE.WS_EX_NOREDIRECTIONBITMAP | WINDOW_EX_STYLE.WS_EX_TOOLWINDOW,
         className,
         title,
-        WINDOW_STYLE.WS_OVERLAPPEDWINDOW,
+        WINDOW_STYLE.WS_OVERLAPPEDWINDOW | WINDOW_STYLE.WS_POPUP,
         0,
         0,
-        200,
-        200,
+        size.Width,
+        size.Height,
         HWND.Null,
         null,
         hInst,
