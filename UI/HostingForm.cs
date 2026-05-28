@@ -18,38 +18,35 @@ class HostingForm : Form
     }
   }
 
-  public readonly Compositor compositor = new();
   private readonly DesktopWindowTarget target;
   internal readonly SpriteVisual root;
+  private readonly Compositor compositor = CompositionCommon.Compositor;
 
 
   public HostingForm()
   {
     // TopMost = false;
     FormBorderStyle = FormBorderStyle.None;
-    // ShowInTaskbar = false;
+    ShowInTaskbar = false;
     
     target = compositor.CreateDesktopWindowTarget(new HWND(Handle), true);
     root = compositor.CreateSpriteVisual();
     target.Root = root;
 
-    InitContent();
+    SetupWindowGeometry();
   }
 
-  public void AddWidget(Widget widget)
+  public void AddComponent(Component widget)
   {
-    widget.Mount(compositor);
-    widget.InitializeContent();
     root.Children.InsertAtTop(widget.Root);
   }
 
 
-  void InitContent()
+  void SetupWindowGeometry()
   {
     var screen = Screen.FromControl(this);
     Size = screen.Bounds.Size;
     Location = new Point(0, 0);
-    // Console.WriteLine($"Size = {Size}");
   }
 
   protected override void WndProc(ref Message m)

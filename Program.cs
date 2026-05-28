@@ -1,33 +1,17 @@
 ﻿namespace iris_v2;
-
-using System;
-using System.Diagnostics;
-using System.Drawing;
-using System.Numerics;
-using System.Windows.Forms;
-using Windows.UI;
-using Windows.UI.Composition;
-using Windows.Win32;
-using Windows.Win32.Foundation;
-using Windows.Win32.UI.WindowsAndMessaging;
-
 static internal class Program
 {
-  /// <summary>
-  ///  The main entry point for the application.
-  /// </summary>
   [STAThread]
   static void Main()
   {
     DispatcherQueueHelper.InitDispatcherQueue();
-    // HostingWindow.RegisterWindowClass();
 
     ApplicationConfiguration.Initialize();
     Application.SetColorMode(SystemColorMode.System);
 
     var host = new HostingForm();
-
-    host.AddWidget(new TestWidget());
+    host.AddComponent(new TestWidget());
+    host.AddComponent(new TestWidget2());
 
     SetupTray();
     Application.Run(host);
@@ -39,7 +23,7 @@ static internal class Program
     {
       Visible = true,
       Icon = SystemIcons.Application,
-      Text = "yo mama"
+      Text = "Iris"
     };
 
     var contextMenuStrip = new ContextMenuStrip

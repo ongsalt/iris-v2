@@ -11,14 +11,21 @@ public static class HotReloader
 
   // public static event Action? OnReload;
   private static Dictionary<Type, List<Action>> OnReload = [];
-  public static void Register(Type type, Action action)
+  public static Action Register(Type type,Action action)
   {
-    if (!OnReload.ContainsKey(type))
+    if (!OnReload.TryGetValue(type, out var actions))
     {
-     OnReload[type] = []; 
+      actions = [];
+      OnReload[type] = actions; 
     }
 
-    OnReload[type].Add(action);
+    actions.Add(action);
+
+    // unsub
+    return () =>
+    {
+      OnReload[type].Remove(action);
+    };
   }
 
   public static void ClearCache(Type[]? updatedTypes)
