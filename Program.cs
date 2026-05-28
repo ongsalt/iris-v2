@@ -20,21 +20,17 @@ static internal class Program
   static void Main()
   {
     DispatcherQueueHelper.InitDispatcherQueue();
-    WidgetWindow.RegisterWindowClass();
-
-    var widget = new WidgetWindow();
-    widget.Show();
-
-    HotReloader.OnReload += () =>
-    {
-      widget.Reset();
-    };
+    // HostingWindow.RegisterWindowClass();
 
     ApplicationConfiguration.Initialize();
     Application.SetColorMode(SystemColorMode.System);
 
+    var host = new HostingForm();
+
+    host.AddWidget(new TestWidget());
+
     SetupTray();
-    Application.Run();
+    Application.Run(host);
   }
 
   static void SetupTray()

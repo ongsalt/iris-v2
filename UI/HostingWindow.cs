@@ -10,13 +10,13 @@ using Windows.Win32.UI.WindowsAndMessaging;
 using WinRT;
 // using Microsoft.
 
-class WidgetWindow : IDisposable
+class HostingWindow : IDisposable
 {
   private readonly Compositor compositor = new();
   private readonly HWND hwnd;
   internal readonly SpriteVisual root;
 
-  internal WidgetWindow()
+  internal HostingWindow()
   {
     // var size = new Size(Screen.PrimaryScreen!.Bounds.Width, Screen.PrimaryScreen!.Bounds.Height);
     // TODO: dpi
@@ -33,23 +33,30 @@ class WidgetWindow : IDisposable
   private void InitContent()
   {
     // root.Brush = compositor.CreateColorBrush(Windows.UI.Color.FromArgb(0x1f, 0xff, 0, 0));
+    var container = CreateFilter();
 
-    var r = CreateVisual();
+    root.Children.InsertAtTop(container);
+  }
+
+  private ContainerVisual CreateFilter()
+  {
+    var container = compositor.CreateContainerVisual();
     var b = CreateBlurVisual();
-    var o = CreateExposureVisual(0.40f);
+    var o = CreateExposureVisual(-0.50f);
+
+    container.Children.InsertAtTop(o);
+    container.Children.InsertAtTop(b);
+
     var offset = new Vector3(40, 40, 0);
-    b.Offset = o.Offset = offset;
+    container.Offset = offset;
 
     var animation = compositor.CreateSpringVector3Animation();
     animation.DampingRatio = 1;
     animation.InitialValue = offset;
     animation.FinalValue = offset * 5;
-    b.StartAnimation("Offset", animation);
-    o.StartAnimation("Offset", animation);
+    container.StartAnimation("Offset", animation);
 
-    // root.Children.InsertAtBottom(r);
-    root.Children.InsertAtTop(o);
-    root.Children.InsertAtTop(b);
+    return container;
   }
 
 
@@ -66,6 +73,15 @@ class WidgetWindow : IDisposable
 
   private Visual CreateVisual()
   {
+    var clip = compositor.CreateShapeVisual();
+
+    var triangle = compositor.CreateSpriteShape();
+    var geometry = compositor.CreateRoundedRectangleGeometry();
+    geometry.Size = new(50, 50);
+    triangle.Geometry = geometry;
+
+    clip.Shapes.Add(triangle);
+
     var sprite = compositor.CreateSpriteVisual();
 
     var brush = compositor.CreateColorBrush();
