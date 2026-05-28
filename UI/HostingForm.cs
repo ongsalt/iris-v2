@@ -25,9 +25,9 @@ class HostingForm : Form
 
   public HostingForm()
   {
-    TopMost = false;
+    // TopMost = false;
     FormBorderStyle = FormBorderStyle.None;
-    ShowInTaskbar = false;
+    // ShowInTaskbar = false;
     
     target = compositor.CreateDesktopWindowTarget(new HWND(Handle), true);
     root = compositor.CreateSpriteVisual();

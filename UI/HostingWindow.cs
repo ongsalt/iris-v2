@@ -18,13 +18,10 @@ class HostingWindow : IDisposable
 
   internal HostingWindow()
   {
-    // var size = new Size(Screen.PrimaryScreen!.Bounds.Width, Screen.PrimaryScreen!.Bounds.Height);
-    // TODO: dpi
     var size = Screen.PrimaryScreen!.Bounds.Size;
     hwnd = SetupCompositionWindow(size) ?? throw new Exception("idk how to use this");
     var target = compositor.CreateDesktopWindowTarget(hwnd, true);
     root = compositor.CreateSpriteVisual();
-    root.Size = new(10000, 10000);
     target.Root = root;
 
     InitContent();
